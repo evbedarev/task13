@@ -1,4 +1,4 @@
-package homework.common.tasks;
+package homework.task_13_1.bedarev.tasks;
 
 import java.security.SecureRandom;
 import java.util.ArrayList;

@@ -2,10 +2,18 @@ package homework.task_13_2;
 import static java.lang.Thread.sleep;
 
 public class TestFixedThreadPool {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws InterruptedException {
         FixedThreadPool fixedThreadPool = new FixedThreadPool();
         fixedThreadPool.start();
-        for (int i = 0; i <= 50; i++) {
+        while (true) {
+            addTasksTo(fixedThreadPool);
+            sleep(20000);
+        }
+    }
+
+    static void addTasksTo(FixedThreadPool fixedThreadPool) {
+
+        for (int i = 0; i <= 10; i++) {
             fixedThreadPool.execute( () -> {
                 try {
                     sleep(5000);

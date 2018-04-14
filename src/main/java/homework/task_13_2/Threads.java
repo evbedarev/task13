@@ -1,20 +1,26 @@
 package homework.task_13_2;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Threads extends Thread {
     private final Object locker;
     private final int threadId;
+    private static Integer taskId;
     private static volatile List<Runnable> queue = new ArrayList<>();
+    private static volatile Map<Integer, Runnable> queueMap = new HashMap<>();
     Runnable task = (() -> {int nUll = 0;}); //Don't want use null
 
     public Threads (Object locker,  int threadId) {
         this.locker = locker;
         this.threadId = threadId;
+        taskId = 1;
+
     }
 
-    public void createThreads (Integer countThreads) {
+    public static void createThreads (Integer countThreads) {
         Object object = new Object();
         for (int i = 0; i <= countThreads; i++) {
             Thread thread = new Threads(object, i);
@@ -44,6 +50,7 @@ public class Threads extends Thread {
                     locker.wait();
                 }
             }
+            taskId =1;
 
             if (queue.size() != 0 && threadId == 0 && haveNewTasks) {
                 locker.notifyAll();
@@ -54,6 +61,7 @@ public class Threads extends Thread {
             }
 
             if (threadId != 0 && queue.size() != 0) {
+
                 task = queue.iterator().next();
                 System.out.println(currentThread().getName() + " execute task");
                 queue.remove(0);
@@ -62,7 +70,8 @@ public class Threads extends Thread {
         task.run();
     }
 
-    public void addTask(Runnable task) {
+    public static void addTask(Runnable task) {
         queue.add(task);
+        queueMap.put(taskId, task);
     }
 }

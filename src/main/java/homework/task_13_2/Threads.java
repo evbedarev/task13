@@ -1,27 +1,25 @@
 package homework.task_13_2;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 public class Threads extends Thread {
-    private final Object locker;
-    private final int threadId;
+    private static final  Object locker = new Object();
+    private int threadId;
     private Integer taskId = 1;
     private static volatile Map<Integer, Runnable> queueMap = new HashMap<>();
     Runnable task = (() -> {int nUll = 0;}); //Don't want use null
 
-    public Threads (Object locker,  int threadId) {
-        this.locker = locker;
+    public Threads (int threadId) {
         this.threadId = threadId;
     }
 
+    public Threads () {
+    }
+
     public void createThreads (Integer countThreads) {
-        Object object = new Object();
-        for (int i = 0; i <= countThreads; i++) {
-            Thread thread = new Threads(object, i);
+        for (int i = 1; i <= countThreads + 1; i++) {
+            Thread thread = new Threads(i);
             thread.start();
         }
     }
@@ -33,6 +31,7 @@ public class Threads extends Thread {
                 threadHandle();
             } catch (InterruptedException e) {
                 e.printStackTrace();
+                break;
             }
         }
     }
@@ -41,7 +40,7 @@ public class Threads extends Thread {
         boolean haveNewTasks = false;
         synchronized (locker) {
             while (queueMap.size() == 0) {
-                if (threadId == 0) {
+                if (threadId == 1) {
                     locker.wait(500);
                     haveNewTasks = true;
                 } else {
@@ -49,7 +48,7 @@ public class Threads extends Thread {
                 }
             }
 
-            if (queueMap.size() != 0 && threadId == 0 && haveNewTasks) {
+            if (queueMap.size() != 0 && threadId == 1 && haveNewTasks) {
                 locker.notifyAll();
                 System.out.println("Notify all from " + currentThread().getName());
             }
@@ -58,7 +57,7 @@ public class Threads extends Thread {
                 locker.wait(500);
             }
 
-            if (threadId != 0 && queueMap.size() != 0) {
+            if (threadId != 1 && queueMap.size() != 0) {
                 Map.Entry entry = queueMap.entrySet().iterator().next();
                 task = (Runnable) entry.getValue();
                 Integer id = (Integer) entry.getKey();

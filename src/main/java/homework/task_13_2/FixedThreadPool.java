@@ -2,9 +2,9 @@ package homework.task_13_2;
 
 
 public class FixedThreadPool implements  ThreadPool {
-    private final static Integer COUNT_THREADS = 4;
+    private final static Integer COUNT_THREADS = 10;
     private final Object obj = new Object();
-    Threads threads = new Threads(obj, 9);
+    Threads threads = new Threads();
 
 
     @Override

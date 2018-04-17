@@ -1,9 +1,6 @@
 package homework.task_13_2;
 
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 public class ScalableTreads extends Thread {
     private static final  Object locker = new Object();
@@ -13,6 +10,7 @@ public class ScalableTreads extends Thread {
     private static int maxThreadCount;
     private static volatile Map<Integer, Runnable> queueMap = new HashMap<>();
     private static Map<Integer, Thread> mapThreads = new HashMap<>();
+    private static List<Integer> listLosedIds = new ArrayList<>();
     Runnable task = (() -> {int nUll = 0;}); //Don't want use null
 
     public ScalableTreads (int threadId) {
@@ -30,11 +28,15 @@ public class ScalableTreads extends Thread {
         }
     }
 
-    private void createOneThread(int threadId) {
+    private void createOneThread(Integer threadId) {
         Thread thread = new ScalableTreads(threadId);
         if (threadId > 0) {
             mapThreads.put(threadId,thread);
         }
+        if (listLosedIds.contains(threadId)) {
+            listLosedIds.remove(threadId);
+        }
+        System.out.println("add threadID = " + threadId);
         thread.start();
     }
 
@@ -42,13 +44,12 @@ public class ScalableTreads extends Thread {
     public void run() {
         while (true) {
             try {
-                if (currentThread().isInterrupted()) {
-                    break;
-                } else {
+//                if (currentThread().isInterrupted()) {
+//                    break;
+//                } else {
                     threadHandle();
-                }
+//                }
             } catch (InterruptedException e) {
-//                e.printStackTrace();
                 System.out.println("Interupted thread");
                 break;
             }
@@ -57,6 +58,7 @@ public class ScalableTreads extends Thread {
 
     private void threadHandle () throws InterruptedException {
         boolean haveNewTasks = false;
+
         synchronized (locker) {
             while (queueMap.size() == 0) {
                 if (threadId == 0) {
@@ -78,11 +80,11 @@ public class ScalableTreads extends Thread {
             }
 
             if (threadId != 0 && queueMap.size() != 0) {
-                Map.Entry entry = queueMap.entrySet().iterator().next();
-                task = (Runnable) entry.getValue();
-                Integer id = (Integer) entry.getKey();
-                System.out.println(currentThread().getName() + " execute task №" + id);
-                queueMap.remove(id, task);
+                Map.Entry taskQueue = queueMap.entrySet().iterator().next();
+                task = (Runnable) taskQueue.getValue();
+                Integer taskId = (Integer) taskQueue.getKey();
+                System.out.println(currentThread().getName() + " execute task №" + taskId);
+                queueMap.remove(taskId, task);
             }
         }
         if (!currentThread().isInterrupted()) {
@@ -100,17 +102,23 @@ public class ScalableTreads extends Thread {
 
     private void addMoreThread () {
         while (queueMap.size() > mapThreads.size() && mapThreads.size() < maxThreadCount) {
-            int maxThreadId = mapThreads.keySet()
-                    .stream()
-                    .max(Comparator.comparing(Integer::intValue))
-                    .get();
-            createOneThread(++maxThreadId);
-            System.out.println("add thread " + maxThreadId);
+            if (listLosedIds.size() == 0) {
+                int maxThreadId = mapThreads.keySet()
+                        .stream()
+                        .max(Comparator.comparing(Integer::intValue))
+                        .get();
+
+                createOneThread(++maxThreadId);
+//                System.out.println("add thread " + maxThreadId);
+            } else {
+                createOneThread(listLosedIds.iterator().next());
+            }
         }
     }
 
-    private void killThread() throws InterruptedException {
+    private void killThread() {
         while (queueMap.size() < mapThreads.size() && mapThreads.size() > minThreadCount) {
+
             Optional<Map.Entry<Integer, Thread>> entry = mapThreads.entrySet()
                     .stream()
                     .filter( elm -> elm.getValue().getState() == State.WAITING)
@@ -120,7 +128,7 @@ public class ScalableTreads extends Thread {
                 entry.get().getValue().interrupt();
                 System.out.println( "Close thread: " + entry.get().getValue().getName());
                 mapThreads.remove(entry.get().getKey());
-                System.out.println("Thread queue size: " + mapThreads.size());
+                listLosedIds.add(entry.get().getKey());
             } else {
                 break;
             }

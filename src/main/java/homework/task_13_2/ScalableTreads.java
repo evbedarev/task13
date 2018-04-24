@@ -36,9 +36,6 @@ public class ScalableTreads extends Thread {
         if (threadId > 0) {
             mapThreads.put(threadId,thread);
         }
-        if (listLosedIds.contains(threadId)) {
-            listLosedIds.remove(threadId);
-        }
         System.out.println("add threadID = " + threadId);
         thread.start();
     }
@@ -72,17 +69,15 @@ public class ScalableTreads extends Thread {
 
         synchronized (LOCKER) {
             boolean haveNewTasks = queueTasks.size() == 0 && waitTasks();
-//            if (threadId == 0 && haveNewTasks) {
-//                LOCKER.notifyAll();
-//                System.out.println("Notify all from " + currentThread().getName());
-//            }
 
-            if (threadId == 0) {
-                LOCKER.wait(500);
+            if (threadId == 0 && haveNewTasks) {
+                LOCKER.notifyAll();
+                System.out.println("Notify all from " + currentThread().getName());
+            } else if (threadId == 0) {
+                LOCKER.wait(200);
                 checkCountThreads();
             }
             if (threadId != 0 && queueTasks.size() != 0) {
-                LOCKER.notifyAll();
                 Map.Entry queueTask = queueTasks.entrySet().iterator().next();
                 task = (Runnable) queueTask.getValue();
                 Integer taskId = (Integer) queueTask.getKey();
@@ -95,6 +90,11 @@ public class ScalableTreads extends Thread {
         }
     }
 
+    /**
+     * Waiting in cycle method.
+     * @return True if manage thread exit from cycle, else return False.
+     * @throws InterruptedException
+     */
     private boolean waitTasks() throws InterruptedException {
         boolean haveNewTasks = false;
 
@@ -127,13 +127,16 @@ public class ScalableTreads extends Thread {
 
                 createOneThread(++maxThreadId);
             } else {
-                createOneThread(listLosedIds.iterator().next());
+                Integer newTaskId = listLosedIds.iterator().next();
+                createOneThread(newTaskId);
+                listLosedIds.remove(newTaskId);
             }
         }
     }
 
     private void killThread() {
-        while (queueTasks.size() < mapThreads.size() && mapThreads.size() > minThreadCount) {
+        while ((queueTasks.size() < mapThreads.size()) &&
+                (mapThreads.size() > minThreadCount)) {
 
             Optional<Map.Entry<Integer, Thread>> threadToKill =
                     mapThreads
@@ -144,6 +147,7 @@ public class ScalableTreads extends Thread {
 
             if (threadToKill.isPresent()) {
                 threadToKill.get().getValue().interrupt();
+
                 System.out.println( "Close thread: " + threadToKill.get().getValue().getName());
                 mapThreads.remove(threadToKill.get().getKey());
                 listLosedIds.add(threadToKill.get().getKey());
@@ -151,8 +155,6 @@ public class ScalableTreads extends Thread {
                 break;
             }
         }
-        System.out.println("Queue size: " + queueTasks.size());
-        System.out.println("Thread size: " + mapThreads.size());
     }
 
     public void addTask(Runnable task) {

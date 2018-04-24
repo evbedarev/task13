@@ -10,7 +10,7 @@ public class TestScalableThreadPool {
             addTasksTo(scalableThreadPool);
 
             try {
-                sleep(20000);
+                sleep(40000);
             } catch (InterruptedException e) {
                 System.out.println("Interrupted error 15");
             }
@@ -19,7 +19,7 @@ public class TestScalableThreadPool {
 
     static void addTasksTo(ScalableThreadPool scalableThreadPool) {
 
-        for (int i = 0; i <= 40; i++) {
+        for (int i = 0; i <= 110; i++) {
             scalableThreadPool.execute( () -> {
                 try {
                     Thread.currentThread();

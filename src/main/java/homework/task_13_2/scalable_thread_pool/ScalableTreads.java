@@ -4,12 +4,10 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class ScalableTreads extends Thread {
-    private static final Object LOCKER = new Object();
     private int threadId;
     private Integer taskId = 1;
     private static int minThreadCount;
     private static int maxThreadCount;
-    private static volatile Map<Integer, Runnable> queueTasks = new LinkedHashMap<>();
     private static Map<Integer, Thread> mapThreads = new HashMap<>();
     private static List<Integer> listLosedIds = new ArrayList<>();
     private static BlockingDeque<Task> queueBlockTasks = new LinkedBlockingDeque<>();
@@ -79,15 +77,15 @@ public class ScalableTreads extends Thread {
     }
 
     private void checkCountThreads() {
-        if (queueTasks.size() > mapThreads.size()) {
+        if (queueBlockTasks.size() > mapThreads.size()) {
             addMoreThread();
-        } else if (queueTasks.size() < mapThreads.size()) {
+        } else if (queueBlockTasks.size() < mapThreads.size()) {
             killThread();
         }
     }
 
     private void addMoreThread () {
-        while (queueTasks.size() > mapThreads.size() && mapThreads.size() < maxThreadCount) {
+        while (queueBlockTasks.size() > mapThreads.size() && mapThreads.size() < maxThreadCount) {
             if (listLosedIds.size() == 0) {
                 int maxThreadId = mapThreads.keySet()
                         .stream()
@@ -104,7 +102,7 @@ public class ScalableTreads extends Thread {
     }
 
     private void killThread() {
-        while ((queueTasks.size() < mapThreads.size()) &&
+        while ((queueBlockTasks.size() < mapThreads.size()) &&
                 (mapThreads.size() > minThreadCount)) {
 
             Optional<Map.Entry<Integer, Thread>> threadToKill =
@@ -128,9 +126,9 @@ public class ScalableTreads extends Thread {
 
     public void addTask(Runnable task) {
         if (taskId > 500) taskId = 1;
-        queueTasks.put(taskId++, task);
         try {
-            queueBlockTasks.put(new Task(taskId, task));
+            queueBlockTasks.put(new Task(taskId++, task));
+            System.out.println("Thread " + threadId + " add tasks to queue");
         } catch (InterruptedException exception) {
             exception.printStackTrace();
         }

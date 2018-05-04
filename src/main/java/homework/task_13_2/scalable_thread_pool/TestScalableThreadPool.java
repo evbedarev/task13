@@ -19,7 +19,7 @@ public class TestScalableThreadPool {
 
     static void addTasksTo(ScalableThreadPool scalableThreadPool) {
 
-        for (int i = 0; i <= 110; i++) {
+        for (int i = 0; i <= 100; i++) {
             scalableThreadPool.execute( () -> {
                 try {
                     Thread.currentThread();

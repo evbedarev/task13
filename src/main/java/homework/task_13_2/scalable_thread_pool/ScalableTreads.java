@@ -1,6 +1,7 @@
 package homework.task_13_2.scalable_thread_pool;
 
 import java.util.*;
+import java.util.concurrent.*;
 
 public class ScalableTreads extends Thread {
     private static final Object LOCKER = new Object();
@@ -11,6 +12,7 @@ public class ScalableTreads extends Thread {
     private static volatile Map<Integer, Runnable> queueTasks = new LinkedHashMap<>();
     private static Map<Integer, Thread> mapThreads = new HashMap<>();
     private static List<Integer> listLosedIds = new ArrayList<>();
+    private static BlockingDeque<Task> queueBlockTasks = new LinkedBlockingDeque<>();
 
     public ScalableTreads (int threadId) {
         this.threadId = threadId;
@@ -65,48 +67,15 @@ public class ScalableTreads extends Thread {
     }
 
     private void threadHandle () throws InterruptedException {
-        Runnable task = (() -> {}); //Don't want use null
-
-        synchronized (LOCKER) {
-            boolean haveNewTasks = queueTasks.size() == 0 && waitTasks();
-
-            if (threadId == 0 && haveNewTasks) {
-                LOCKER.notifyAll();
-                System.out.println("Notify all from " + currentThread().getName());
-            } else if (threadId == 0) {
-                LOCKER.wait(200);
-                checkCountThreads();
-            }
-            if (threadId != 0 && queueTasks.size() != 0) {
-                Map.Entry queueTask = queueTasks.entrySet().iterator().next();
-                task = (Runnable) queueTask.getValue();
-                Integer taskId = (Integer) queueTask.getKey();
-                System.out.println(currentThread().getName() + " execute task №" + taskId);
-                queueTasks.remove(taskId, task);
-            }
+        if (threadId != 0) {
+            Task task = queueBlockTasks.take();
+            System.out.println("Running task " + task.getTaskId() + " in thread "
+                    + currentThread().getName());
+            task.getTask().run();
+        } else {
+            checkCountThreads();
+            sleep(500);
         }
-        if (!currentThread().isInterrupted() && threadId > 0) {
-            task.run();
-        }
-    }
-
-    /**
-     * Waiting in cycle method.
-     * @return True if manage thread exit from cycle, else return False.
-     * @throws InterruptedException
-     */
-    private boolean waitTasks() throws InterruptedException {
-        boolean haveNewTasks = false;
-
-        while (queueTasks.size() == 0) {
-            if (threadId == 0) {
-                LOCKER.wait(500);
-                haveNewTasks = true;
-            } else {
-                LOCKER.wait();
-            }
-        }
-        return haveNewTasks;
     }
 
     private void checkCountThreads() {
@@ -160,5 +129,11 @@ public class ScalableTreads extends Thread {
     public void addTask(Runnable task) {
         if (taskId > 500) taskId = 1;
         queueTasks.put(taskId++, task);
+        try {
+            queueBlockTasks.put(new Task(taskId, task));
+        } catch (InterruptedException exception) {
+            exception.printStackTrace();
+        }
+
     }
 }

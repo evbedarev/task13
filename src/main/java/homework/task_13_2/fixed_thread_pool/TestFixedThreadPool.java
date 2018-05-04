@@ -1,4 +1,5 @@
-package homework.task_13_2;
+package homework.task_13_2.fixed_thread_pool;
+
 import static java.lang.Thread.sleep;
 
 public class TestFixedThreadPool {

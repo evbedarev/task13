@@ -1,7 +1,10 @@
-package homework.task_13_2;
+package homework.task_13_2.fixed_thread_pool;
 
 
-public class FixedThreadPool implements  ThreadPool {
+import homework.task_13_2.ThreadPool;
+import homework.task_13_2.Threads;
+
+public class FixedThreadPool implements ThreadPool {
     private final static Integer COUNT_THREADS = 10;
     private final Object obj = new Object();
     Threads threads = new Threads();

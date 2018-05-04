@@ -1,4 +1,4 @@
-package homework.task_13_2;
+package homework.task_13_2.ancillary_modules;
 
 public class Join extends Thread {
 

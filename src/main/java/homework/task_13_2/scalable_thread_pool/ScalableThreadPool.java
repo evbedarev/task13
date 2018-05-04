@@ -1,4 +1,5 @@
-package homework.task_13_2;
+package homework.task_13_2.scalable_thread_pool;
+import homework.task_13_2.ThreadPool;
 
 public class ScalableThreadPool implements ThreadPool {
     private final static Integer MIN_COUNT_THREADS = 20;

@@ -1,4 +1,4 @@
-package homework.task_13_2;
+package homework.task_13_2.scalable_thread_pool;
 
 import java.util.*;
 
@@ -158,6 +158,7 @@ public class ScalableTreads extends Thread {
     }
 
     public void addTask(Runnable task) {
+        if (taskId > 500) taskId = 1;
         queueTasks.put(taskId++, task);
     }
 }

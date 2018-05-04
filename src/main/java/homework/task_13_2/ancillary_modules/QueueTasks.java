@@ -1,4 +1,4 @@
-package homework.task_13_2;
+package homework.task_13_2.ancillary_modules;
 
 import java.util.*;
 
@@ -24,7 +24,7 @@ public class QueueTasks extends Thread {
     public void run() {
         try {
             while (true) {
-                Runnable task = (() -> {int none = 1;});
+                Runnable task = (() -> {});
                 Map.Entry entry;
                 int taskId;
                 boolean changeState = false;

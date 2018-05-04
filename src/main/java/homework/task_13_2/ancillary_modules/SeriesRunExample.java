@@ -1,4 +1,4 @@
-package homework.task_13_2;
+package homework.task_13_2.ancillary_modules;
 
 public class SeriesRunExample extends Thread {
     private static int currentMax = 1;

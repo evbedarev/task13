@@ -1,4 +1,4 @@
-package homework.task_13_2;
+package homework.task_13_2.scalable_thread_pool;
 
 import static java.lang.Thread.sleep;
 

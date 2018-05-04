@@ -159,6 +159,7 @@ public class ScalableTreads extends Thread {
 
     public void addTask(Runnable task) {
         if (taskId > 500) taskId = 1;
+        System.out.println("Thread " + threadId + " add tasks in queue");
         queueTasks.put(taskId++, task);
     }
 }

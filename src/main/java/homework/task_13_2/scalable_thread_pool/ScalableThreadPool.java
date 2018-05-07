@@ -2,11 +2,16 @@ package homework.task_13_2.scalable_thread_pool;
 import homework.task_13_2.ThreadPool;
 
 public class ScalableThreadPool implements ThreadPool {
-    private final static Integer MIN_COUNT_THREADS = 20;
-    private final static Integer MAX_COUNT_THREADS = 50;
-    private final Object obj = new Object();
-    ScalableTreads threads = new ScalableTreads(MIN_COUNT_THREADS, MAX_COUNT_THREADS);
+    ScalableTreads threads;
 
+    /**
+     * Constructor
+     * @param min_count_threads - minimal count of threads
+     * @param max_count_threads - maximal count of threads
+     */
+    public ScalableThreadPool(Integer min_count_threads, Integer max_count_threads) {
+        threads = new ScalableTreads(min_count_threads, max_count_threads);
+    }
 
     @Override
     public void start() {

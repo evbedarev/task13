@@ -4,7 +4,7 @@ import static java.lang.Thread.sleep;
 
 public class TestScalableThreadPool {
     public static void main(String[] args) {
-        ScalableThreadPool scalableThreadPool = new ScalableThreadPool();
+        ScalableThreadPool scalableThreadPool = new ScalableThreadPool(20, 50);
         scalableThreadPool.start();
         while (true) {
             addTasksTo(scalableThreadPool);

@@ -114,7 +114,6 @@ public class ScalableTreads extends Thread {
 
             if (threadToKill.isPresent()) {
                 threadToKill.get().getValue().interrupt();
-
                 System.out.println( "Close thread: " + threadToKill.get().getValue().getName());
                 mapThreads.remove(threadToKill.get().getKey());
                 listLosedIds.add(threadToKill.get().getKey());

@@ -10,7 +10,7 @@ public class ScalableTreads extends Thread {
     private static int maxThreadCount;
     private static Map<Integer, Thread> mapThreads = new HashMap<>();
     private static List<Integer> listLosedIds = new ArrayList<>();
-    private static BlockingDeque<Task> queueBlockTasks = new LinkedBlockingDeque<>();
+    private static ConcurrentLinkedQueue<Task> queueBlockTasks = new ConcurrentLinkedQueue<>();
 
     public ScalableTreads (int threadId) {
         this.threadId = threadId;
@@ -66,7 +66,7 @@ public class ScalableTreads extends Thread {
 
     private void threadHandle () throws InterruptedException {
         if (threadId != 0) {
-            Task task = queueBlockTasks.take();
+            Task task = queueBlockTasks.poll();
             System.out.println("Running task " + task.getTaskId() + " in thread "
                     + currentThread().getName());
             task.getTask().run();
@@ -126,7 +126,7 @@ public class ScalableTreads extends Thread {
     public void addTask(Runnable task) {
         if (taskId > 500) taskId = 1;
         try {
-            queueBlockTasks.put(new Task(taskId++, task));
+            queueBlockTasks.offer(new Task(taskId++, task));
             System.out.println("Thread " + threadId + " add tasks to queue");
         } catch (InterruptedException exception) {
             exception.printStackTrace();
